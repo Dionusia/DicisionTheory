@@ -1,17 +1,25 @@
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-# Load the Excel file
+#load xlsx file
 file_path = 'BreastTissue.xlsx'
 excel_data = pd.read_excel(file_path, sheet_name='Data')
 
-# Identify numerical columns
+#identify numerical columns
 numerical_columns = excel_data.select_dtypes(include=['float64', 'int64']).columns
 
-# Normalize only the numerical columns to the range [-1, 1]
+#normalize only the numerical columns to the range [-1, 1], except column Class
 excel_data[numerical_columns] = 2 * (excel_data[numerical_columns] - excel_data[numerical_columns].min()) / (
         excel_data[numerical_columns].max() - excel_data[numerical_columns].min()) - 1
 
-# Create a mapping for the "Class" column
+#check for NaN values
+if excel_data.isna().any().any():
+    print("The DataFrame contains NaN values. Please handle them before proceeding.")
+else:
+    print("No NaN values found in the DataFrame.")
+
+#create a mapping for the "Class" column to do the match
 class_mapping = {
     'car': '1',
     'fad': '2',
@@ -21,12 +29,20 @@ class_mapping = {
     'adi': '6'
 }
 
-# Replace the "Class" column values with the mapping values
+#replacing the values
 excel_data['Class'] = excel_data['Class'].map(class_mapping)
 
-# Save the normalized data to a CSV file
+#save the data into a csv file
 csv_file_path = 'BreastTissue.csv'
 excel_data.to_csv(csv_file_path, index=False)
 
-# Display the first few rows of the normalized data
+#display few rows to check
 print(excel_data.head())
+
+#create a heatmap using seaborn
+corr_matrix = excel_data[numerical_columns].corr()
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Heatmap of Dataset')
+plt.show()
+

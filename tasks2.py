@@ -1,9 +1,9 @@
-import pandas as pd
+from sklearn import neighbors, preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, recall_score, precision_score
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
+import pandas as pd
 
 #load csv
 df = pd.read_csv("BreastTissue.csv")
@@ -12,50 +12,59 @@ df = pd.read_csv("BreastTissue.csv")
 X = df.drop('Class', axis=1)
 y = df['Class']
 
-#split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+#split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=0, train_size=0.7)
 
-#train naive bayes
+#standardize the features
+scaler = preprocessing.StandardScaler().fit(X_train)
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)
+
+#create and train KNN
+knn = neighbors.KNeighborsClassifier(n_neighbors=3)
+knn.fit(X_train, y_train)
+
+#create and train Naive Bayes
 nb_model = GaussianNB()
 nb_model.fit(X_train, y_train)
-nb_predictions = nb_model.predict(X_test)
 
-#train SVM
+#create and train SVM
 svm_model = SVC()
 svm_model.fit(X_train, y_train)
-svm_predictions = svm_model.predict(X_test)
 
-#train KNN
-knn_model = KNeighborsClassifier()
-knn_model.fit(X_train, y_train)
-knn_predictions = knn_model.predict(X_test)
+#make predictions
+knn_pred = knn.predict(X_test)
+nb_pred = nb_model.predict(X_test)
+svm_pred = svm_model.predict(X_test)
 
-#evaluate NB
-nb_accuracy = accuracy_score(y_test, nb_predictions)
-nb_recall = recall_score(y_test, nb_predictions, average='weighted')
-nb_precision = precision_score(y_test, nb_predictions, average='weighted')
+#extract unique labels from predictions to avoid error
+knn_labels = sorted(set(knn_pred))
+nb_labels = sorted(set(nb_pred))
+svm_labels = sorted(set(svm_pred))
 
-#evaluate SVM
-svm_accuracy = accuracy_score(y_test, svm_predictions)
-svm_recall = recall_score(y_test, svm_predictions, average='weighted')
-svm_precision = precision_score(y_test, svm_predictions, average='weighted')
-
-#evaluate KNN
-knn_accuracy = accuracy_score(y_test, knn_predictions)
-knn_recall = recall_score(y_test, knn_predictions, average='weighted')
-knn_precision = precision_score(y_test, knn_predictions, average='weighted')
-
-print("Naive Bayes:")
-print("Accuracy:", nb_accuracy)
-print("Recall:", nb_recall)
-print("Precision:", nb_precision)
-
-print("\nSVM:")
-print("Accuracy:", svm_accuracy)
-print("Recall:", svm_recall)
-print("Precision:", svm_precision)
-
+#evaluate and print for KNN
+knn_accuracy = accuracy_score(y_test, knn_pred)
+knn_recall = recall_score(y_test, knn_pred, average='weighted')
+knn_precision = precision_score(y_test, knn_pred, average='weighted', labels=knn_labels)
 print("\nKNN:")
 print("Accuracy:", knn_accuracy)
 print("Recall:", knn_recall)
 print("Precision:", knn_precision)
+
+#evaluate and print for Naive Bayes
+nb_accuracy = accuracy_score(y_test, nb_pred)
+nb_recall = recall_score(y_test, nb_pred, average='weighted')
+nb_precision = precision_score(y_test, nb_pred, average='weighted', labels=nb_labels)
+print("\nNaive Bayes:")
+print("Accuracy:", nb_accuracy)
+print("Recall:", nb_recall)
+print("Precision:", nb_precision)
+
+#evaluate and print for SVM
+svm_accuracy = accuracy_score(y_test, svm_pred)
+svm_recall = recall_score(y_test, svm_pred, average='weighted')
+svm_precision = precision_score(y_test, svm_pred, average='weighted', labels=svm_labels)
+print("\nSVM:")
+print("Accuracy:", svm_accuracy)
+print("Recall:", svm_recall)
+print("Precision:", svm_precision)

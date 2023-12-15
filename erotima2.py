@@ -16,7 +16,7 @@ y = df['Class']
 X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=0, train_size=0.7)
 
 #standardize the features
-scaler = preprocessing.StandardScaler().fit(X_train)
+scaler = preprocessing.StandardScaler().fit(X_train)  #standardizes by removing the mean and scaling to unit variance.
 X_train = scaler.transform(X_train)
 X_test = scaler.transform(X_test)
 

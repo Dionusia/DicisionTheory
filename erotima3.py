@@ -29,7 +29,7 @@ df_metrics_KNN = pd.DataFrame(columns=['Fold', 'Sensitivity', 'Specificity'])
 
 # Models
 gnb = GaussianNB()
-clf_svm = SVC(C=21, gamma=0.5, kernel='rbf')
+clf_svm = SVC(C=26, gamma=0.5, kernel='rbf')
 knn = KNeighborsClassifier(n_neighbors=9, metric='l1')
 
 for i, (train, test) in enumerate(kfold.split(X)):
